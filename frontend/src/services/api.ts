@@ -1,6 +1,10 @@
 // API configuration and service functions
 const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
 
+// Debug: Log the API URL being used
+console.log("🔧 DEBUG: API_BASE_URL =", API_BASE_URL);
+console.log("🔧 DEBUG: VITE_API_URL =", import.meta.env.VITE_API_URL);
+
 // API response types
 export interface ApiResponse<T = any> {
   status: "SUCCESS" | "ERROR";
