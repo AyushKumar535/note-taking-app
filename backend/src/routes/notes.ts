@@ -10,6 +10,9 @@ router.use(authenticateToken);
 // GET /notes - Get all notes for authenticated user
 router.get("/", async (req, res) => {
   try {
+    console.log("User from req:", req.user);
+    console.log("User ID:", req.user._id);
+    console.log("User ID type:", typeof req.user._id);
     const notes = await Note.find({ userId: req.user._id }).sort({
       updatedAt: -1,
     }); // Latest first
@@ -34,6 +37,10 @@ router.get("/", async (req, res) => {
 // POST /notes - Create a new note
 router.post("/", async (req, res) => {
   try {
+    console.log("Raw request body:", req.body);
+    console.log("Request headers:", req.headers);
+    console.log("Content-Type:", req.headers["content-type"]);
+
     const { title, content } = req.body;
 
     if (!title || !content) {
@@ -43,11 +50,18 @@ router.post("/", async (req, res) => {
       });
     }
 
+    console.log("Creating note for user:", req.user);
+    console.log("User ID for note:", req.user._id);
+    console.log("User ID type:", typeof req.user._id);
+    console.log("Request body:", { title, content });
+
     const newNote = new Note({
       userId: req.user._id,
       title: title.trim(),
       content: content.trim(),
     });
+
+    console.log("New note object created:", newNote);
 
     const savedNote = await newNote.save();
 

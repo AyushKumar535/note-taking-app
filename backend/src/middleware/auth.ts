@@ -31,6 +31,7 @@ export const authenticateToken = async (
 
     // Verify token
     const decoded = verifyJWT(token);
+    console.log("Auth middleware - decoded token:", decoded);
     if (!decoded) {
       return res.status(403).json({
         status: "ERROR",
@@ -56,6 +57,9 @@ export const authenticateToken = async (
     }
 
     // Attach user to request
+    console.log("Auth middleware - user found:", user);
+    console.log("Auth middleware - user._id:", user._id);
+    console.log("Auth middleware - user.id:", user.id);
     req.user = user;
     next();
   } catch (error) {
