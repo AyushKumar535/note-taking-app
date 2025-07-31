@@ -3,7 +3,6 @@ import mongoose, { Document, Schema } from "mongoose";
 export interface IUser extends Document {
   name: string;
   email: string;
-  password?: string;
   googleId?: string;
   isVerified: boolean;
   verificationToken?: string;
@@ -28,12 +27,7 @@ const userSchema = new Schema<IUser>(
       lowercase: true,
       trim: true,
     },
-    password: {
-      type: String,
-      required: function (this: IUser) {
-        return this.authProvider === "email";
-      },
-    },
+
     googleId: {
       type: String,
       sparse: true,

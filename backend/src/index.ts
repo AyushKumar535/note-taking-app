@@ -56,14 +56,12 @@ app.get("/add-dummy-data", async (req, res) => {
       {
         name: "John Doe",
         email: "john@example.com",
-        password: "hashedpassword123",
         authProvider: "email",
         isVerified: true,
       },
       {
         name: "Jane Smith",
         email: "jane@example.com",
-        password: "hashedpassword456",
         authProvider: "email",
         isVerified: true,
       },
@@ -152,7 +150,6 @@ app.get("/test-db", async (req, res) => {
     const testUser = new User({
       name: "Test User",
       email: "test@example.com",
-      password: "hashedpassword123",
       authProvider: "email",
       isVerified: true,
     });

@@ -39,7 +39,7 @@ export const authenticateToken = async (
     }
 
     // Get user from database
-    const user = await User.findById(decoded.userId).select("-password");
+    const user = await User.findById(decoded.userId);
     if (!user) {
       return res.status(404).json({
         status: "ERROR",
