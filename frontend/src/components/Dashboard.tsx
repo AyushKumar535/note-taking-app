@@ -22,20 +22,31 @@ const Dashboard: React.FC = () => {
 
   // Fetch notes on component mount
   useEffect(() => {
-    fetchNotes();
-  }, []);
+    if (token) {
+      fetchNotes();
+    }
+  }, [token]);
 
   const fetchNotes = async () => {
-    if (!token) return;
+    if (!token) {
+      console.log("No token available, skipping fetch notes");
+      return;
+    }
     
     try {
       setIsLoading(true);
+      setError("");
+      console.log("Fetching notes with token:", token.substring(0, 20) + "...");
+      
       const response = await apiService.getNotes(token);
+      console.log("Notes API response:", response);
       
       if (response.status === "SUCCESS" && response.data) {
         setNotes(response.data.notes);
+        console.log("Notes loaded successfully:", response.data.notes.length);
       } else {
         setError(response.message || "Failed to fetch notes");
+        console.error("Notes API error:", response);
       }
     } catch (error) {
       setError("Failed to fetch notes");
@@ -54,19 +65,24 @@ const Dashboard: React.FC = () => {
     try {
       setIsCreating(true);
       setError("");
+      console.log("Creating note:", { title: newNote.title, content: newNote.content.substring(0, 50) + "..." });
       
       const response = await apiService.createNote(
         token,
         newNote.title.trim(),
         newNote.content.trim()
       );
+      
+      console.log("Create note API response:", response);
 
       if (response.status === "SUCCESS" && response.data) {
         setNotes([response.data.note, ...notes]);
         setNewNote({ title: "", content: "" });
         setShowCreateModal(false);
+        console.log("Note created successfully!");
       } else {
         setError(response.message || "Failed to create note");
+        console.error("Create note API error:", response);
       }
     } catch (error) {
       setError("Failed to create note");

@@ -33,7 +33,7 @@ const GoogleSignIn: React.FC<GoogleSignInProps> = ({
         window.google.accounts.id.renderButton(googleButtonRef.current, {
           theme: "outline",
           size: "large",
-          width: "100%",
+          width: 400,
           text: "continue_with",
           shape: "rounded",
         });
@@ -75,10 +75,10 @@ const GoogleSignIn: React.FC<GoogleSignInProps> = ({
   };
 
   return (
-    <div className="w-full">
+    <div className="w-full flex justify-center">
       <div
         ref={googleButtonRef}
-        className={`w-full ${disabled ? "opacity-50 pointer-events-none" : ""}`}
+        className={`${disabled ? "opacity-50 pointer-events-none" : ""}`}
       />
     </div>
   );
