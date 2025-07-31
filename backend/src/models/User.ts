@@ -1,4 +1,4 @@
-import mongoose, { Document, Schema } from 'mongoose';
+import mongoose, { Document, Schema } from "mongoose";
 
 export interface IUser extends Document {
   name: string;
@@ -7,49 +7,60 @@ export interface IUser extends Document {
   googleId?: string;
   isVerified: boolean;
   verificationToken?: string;
-  authProvider: 'email' | 'google';
+  otp?: string;
+  otpExpiry?: Date;
+  authProvider: "email" | "google";
   createdAt: Date;
   updatedAt: Date;
 }
 
-const userSchema = new Schema<IUser>({
-  name: {
-    type: String,
-    required: true,
-    trim: true
+const userSchema = new Schema<IUser>(
+  {
+    name: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+    email: {
+      type: String,
+      required: true,
+      unique: true,
+      lowercase: true,
+      trim: true,
+    },
+    password: {
+      type: String,
+      required: function (this: IUser) {
+        return this.authProvider === "email";
+      },
+    },
+    googleId: {
+      type: String,
+      sparse: true,
+    },
+    isVerified: {
+      type: Boolean,
+      default: false,
+    },
+    verificationToken: {
+      type: String,
+    },
+    otp: {
+      type: String,
+    },
+    otpExpiry: {
+      type: Date,
+    },
+    authProvider: {
+      type: String,
+      enum: ["email", "google"],
+      required: true,
+    },
   },
-  email: {
-    type: String,
-    required: true,
-    unique: true,
-    lowercase: true,
-    trim: true
-  },
-  password: {
-    type: String,
-    required: function(this: IUser) {
-      return this.authProvider === 'email';
-    }
-  },
-  googleId: {
-    type: String,
-    sparse: true
-  },
-  isVerified: {
-    type: Boolean,
-    default: false
-  },
-  verificationToken: {
-    type: String
-  },
-  authProvider: {
-    type: String,
-    enum: ['email', 'google'],
-    required: true
+  {
+    timestamps: true,
   }
-}, {
-  timestamps: true
-});
+);
 
-const User = mongoose.model<IUser>('User', userSchema);
+const User = mongoose.model<IUser>("User", userSchema);
 export default User;
