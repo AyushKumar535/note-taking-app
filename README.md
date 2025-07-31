@@ -6,7 +6,7 @@ A modern, secure, and responsive note-taking application built with React, Node.
 
 ## 🚀 Live Demo
 
-- **Frontend**: [Deployed on Vercel](https://your-app.vercel.app)
+- **Frontend**: [Deployed on Vercel](https://note-taking-app-frontend-iota.vercel.app/)
 - **Backend API**: [Deployed on Vercel](https://your-api-backend.vercel.app)
 
 ## ✨ Features
