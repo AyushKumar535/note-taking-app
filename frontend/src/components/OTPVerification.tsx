@@ -6,12 +6,14 @@ interface OTPVerificationProps {
   email: string;
   onVerificationSuccess: () => void;
   onBackToSignup: () => void;
+  isLogin?: boolean; // New prop to distinguish between signup and login OTP
 }
 
 const OTPVerification: React.FC<OTPVerificationProps> = ({
   email,
   onVerificationSuccess,
   onBackToSignup,
+  isLogin = false,
 }) => {
   const [otp, setOtp] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -57,7 +59,10 @@ const OTPVerification: React.FC<OTPVerificationProps> = ({
     setIsLoading(true);
 
     try {
-      const response = await apiService.verifyOTP(email, otp);
+      // Use different API calls based on whether this is login or signup OTP
+      const response = isLogin
+        ? await apiService.verifyLoginOTP(email, otp)
+        : await apiService.verifyOTP(email, otp);
 
       if (response.status === "SUCCESS" && response.data) {
         // Store auth data and redirect

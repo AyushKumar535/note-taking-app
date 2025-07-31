@@ -1,12 +1,12 @@
 import express from "express";
+import { OAuth2Client } from "google-auth-library";
 import { User } from "../models";
-import {
-  generateJWT,
-  generateOTPExpiry,
-  isOTPExpired,
-} from "../utils/auth";
+import { generateJWT, generateOTPExpiry, isOTPExpired } from "../utils/auth";
 import { generateOTP, sendOTPEmail } from "../utils/email";
 import { authenticateToken } from "../middleware/auth";
+
+// Initialize Google OAuth client
+const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
 const router = express.Router();
 
@@ -15,8 +15,6 @@ const validateEmail = (email: string): boolean => {
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   return emailRegex.test(email);
 };
-
-
 
 // POST /auth/signup - Send OTP for signup
 router.post("/signup", async (req, res) => {
@@ -183,7 +181,7 @@ router.post("/verify", async (req, res) => {
   }
 });
 
-// POST /auth/login - Send OTP for login  
+// POST /auth/login - Send OTP for login
 router.post("/login", async (req, res) => {
   try {
     const { email } = req.body;
@@ -217,7 +215,8 @@ router.post("/login", async (req, res) => {
     if (!user.isVerified) {
       return res.status(403).json({
         status: "ERROR",
-        message: "Please verify your email address first. Check your inbox for the OTP.",
+        message:
+          "Please verify your email address first. Check your inbox for the OTP.",
       });
     }
 
@@ -423,6 +422,115 @@ router.post("/resend-otp", async (req, res) => {
     res.status(500).json({
       status: "ERROR",
       message: "Internal server error. Please try again.",
+    });
+  }
+});
+
+// POST /auth/google - Google OAuth authentication
+router.post("/google", async (req, res) => {
+  try {
+    const { token } = req.body;
+
+    if (!token) {
+      return res.status(400).json({
+        status: "ERROR",
+        message: "Google token is required",
+      });
+    }
+
+    // Verify Google token
+    const ticket = await googleClient.verifyIdToken({
+      idToken: token,
+      audience: process.env.GOOGLE_CLIENT_ID,
+    });
+
+    const payload = ticket.getPayload();
+    if (!payload) {
+      return res.status(400).json({
+        status: "ERROR",
+        message: "Invalid Google token",
+      });
+    }
+
+    const { sub: googleId, email, name, email_verified } = payload;
+
+    if (!email_verified) {
+      return res.status(400).json({
+        status: "ERROR",
+        message: "Google email not verified",
+      });
+    }
+
+    // Check if user already exists
+    let user = await User.findOne({
+      $or: [{ email: email!.toLowerCase() }, { googleId }],
+    });
+
+    if (user) {
+      // User exists
+      if (user.authProvider === "email" && !user.googleId) {
+        // User signed up with email, now connecting Google account
+        user.googleId = googleId;
+        user.authProvider = "google"; // Switch to Google as primary
+        await user.save();
+      } else if (user.authProvider === "google" && user.googleId !== googleId) {
+        // Different Google account with same email
+        return res.status(400).json({
+          status: "ERROR",
+          message: "This email is associated with a different Google account",
+        });
+      }
+    } else {
+      // Create new user
+      user = new User({
+        name: name || "Google User",
+        email: email!.toLowerCase(),
+        googleId,
+        authProvider: "google",
+        isVerified: true, // Google users are pre-verified
+      });
+      await user.save();
+    }
+
+    // Generate JWT token
+    const jwtToken = generateJWT((user._id as any).toString());
+
+    res.status(200).json({
+      status: "SUCCESS",
+      message: user.isNew
+        ? "Account created successfully with Google! Welcome to Note Taking App."
+        : "Login successful! Welcome back.",
+      data: {
+        token: jwtToken,
+        user: {
+          id: (user._id as any).toString(),
+          name: user.name,
+          email: user.email,
+          authProvider: user.authProvider,
+          isVerified: user.isVerified,
+        },
+      },
+    });
+  } catch (error) {
+    console.error("Google auth error:", error);
+    
+    if (error instanceof Error && error.message.includes("Token used too early")) {
+      return res.status(400).json({
+        status: "ERROR",
+        message: "Google token is not yet valid. Please try again.",
+      });
+    }
+    
+    if (error instanceof Error && error.message.includes("Token expired")) {
+      return res.status(400).json({
+        status: "ERROR",
+        message: "Google token has expired. Please sign in again.",
+      });
+    }
+
+    res.status(500).json({
+      status: "ERROR",
+      message: "Google authentication failed. Please try again.",
     });
   }
 });

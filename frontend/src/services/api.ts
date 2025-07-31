@@ -56,10 +56,7 @@ class ApiService {
   }
 
   // Auth endpoints
-  async signup(
-    name: string,
-    email: string
-  ): Promise<ApiResponse> {
+  async signup(name: string, email: string): Promise<ApiResponse> {
     return this.apiCall("/auth/signup", {
       method: "POST",
       body: JSON.stringify({ name, email }),
@@ -76,9 +73,7 @@ class ApiService {
     });
   }
 
-  async login(
-    email: string
-  ): Promise<ApiResponse> {
+  async login(email: string): Promise<ApiResponse> {
     return this.apiCall("/auth/login", {
       method: "POST",
       body: JSON.stringify({ email }),
@@ -92,6 +87,13 @@ class ApiService {
     return this.apiCall<AuthResponse>("/auth/verify-login", {
       method: "POST",
       body: JSON.stringify({ email, otp }),
+    });
+  }
+
+  async googleAuth(token: string): Promise<ApiResponse<AuthResponse>> {
+    return this.apiCall<AuthResponse>("/auth/google", {
+      method: "POST",
+      body: JSON.stringify({ token }),
     });
   }
 

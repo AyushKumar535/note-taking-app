@@ -1,34 +1,25 @@
 import React, { useState } from "react";
-import { FiCalendar } from "react-icons/fi";
 import { apiService } from "../services/api";
 import GoogleSignIn from "./GoogleSignIn";
 
-interface SignupProps {
-  onSignupSuccess: (email: string) => void;
-  onSwitchToLogin: () => void;
+interface LoginProps {
+  onLoginSuccess: (email: string) => void;
+  onSwitchToSignup: () => void;
   onGoogleSuccess: (token: string, user: any) => void;
 }
 
-const Signup: React.FC<SignupProps> = ({
-  onSignupSuccess,
-  onSwitchToLogin,
+const Login: React.FC<LoginProps> = ({
+  onLoginSuccess,
+  onSwitchToSignup,
   onGoogleSuccess,
 }) => {
-  const [formData, setFormData] = useState({
-    name: "",
-    dateOfBirth: "",
-    email: "",
-  });
+  const [email, setEmail] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
 
   // Handle input changes
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
+    setEmail(e.target.value);
     // Clear error when user starts typing
     if (error) setError("");
   };
@@ -40,28 +31,19 @@ const Signup: React.FC<SignupProps> = ({
     setIsLoading(true);
 
     // Basic validation
-    if (!formData.name.trim()) {
-      setError("Please enter your name");
-      setIsLoading(false);
-      return;
-    }
-
-    if (!formData.email.trim()) {
+    if (!email.trim()) {
       setError("Please enter your email");
       setIsLoading(false);
       return;
     }
 
     try {
-      const response = await apiService.signup(
-        formData.name.trim(),
-        formData.email.trim()
-      );
+      const response = await apiService.login(email.trim());
 
       if (response.status === "SUCCESS") {
-        onSignupSuccess(formData.email.trim());
+        onLoginSuccess(email.trim());
       } else {
-        setError(response.message || "Signup failed. Please try again.");
+        setError(response.message || "Login failed. Please try again.");
       }
     } catch (error) {
       setError("Something went wrong. Please try again.");
@@ -85,9 +67,9 @@ const Signup: React.FC<SignupProps> = ({
       <div className="max-w-sm mx-auto w-full">
         {/* Header */}
         <div className="text-center mb-8">
-          <h1 className="text-2xl font-semibold text-gray-900 mb-2">Sign up</h1>
+          <h1 className="text-2xl font-semibold text-gray-900 mb-2">Sign in</h1>
           <p className="text-gray-600 text-sm">
-            Sign up to enjoy the feature of HD
+            Welcome back! Please sign in to your account
           </p>
         </div>
 
@@ -100,48 +82,6 @@ const Signup: React.FC<SignupProps> = ({
 
         {/* Form */}
         <form onSubmit={handleSubmit} className="space-y-4">
-          {/* Name Field */}
-          <div>
-            <label
-              htmlFor="name"
-              className="block text-sm font-medium text-gray-700 mb-1"
-            >
-              Your Name
-            </label>
-            <input
-              id="name"
-              name="name"
-              type="text"
-              value={formData.name}
-              onChange={handleChange}
-              placeholder="Jonas Khanwald"
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors"
-              disabled={isLoading}
-            />
-          </div>
-
-          {/* Date of Birth Field */}
-          <div>
-            <label
-              htmlFor="dateOfBirth"
-              className="block text-sm font-medium text-gray-700 mb-1"
-            >
-              Date of Birth
-            </label>
-            <div className="relative">
-              <input
-                id="dateOfBirth"
-                name="dateOfBirth"
-                type="date"
-                value={formData.dateOfBirth}
-                onChange={handleChange}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors pr-10"
-                disabled={isLoading}
-              />
-              <FiCalendar className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5 pointer-events-none" />
-            </div>
-          </div>
-
           {/* Email Field */}
           <div>
             <label
@@ -154,7 +94,7 @@ const Signup: React.FC<SignupProps> = ({
               id="email"
               name="email"
               type="email"
-              value={formData.email}
+              value={email}
               onChange={handleChange}
               placeholder="jonas_kahnwald@gmail.com"
               className="w-full px-4 py-3 border-2 border-blue-500 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors"
@@ -163,14 +103,10 @@ const Signup: React.FC<SignupProps> = ({
             />
           </div>
 
-
-
           {/* Submit Button */}
           <button
             type="submit"
-            disabled={
-              isLoading || !formData.name.trim() || !formData.email.trim()
-            }
+            disabled={isLoading || !email.trim()}
             className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 disabled:cursor-not-allowed text-white font-semibold py-3 px-4 rounded-lg transition-colors duration-200 mt-6"
             style={{ backgroundColor: isLoading ? "#93C5FD" : "#337DFF" }}
           >
@@ -180,7 +116,7 @@ const Signup: React.FC<SignupProps> = ({
                 Sending OTP...
               </div>
             ) : (
-              "Get OTP"
+              "Send Login OTP"
             )}
           </button>
         </form>
@@ -204,16 +140,16 @@ const Signup: React.FC<SignupProps> = ({
           />
         </div>
 
-        {/* Sign In Link */}
+        {/* Sign Up Link */}
         <div className="text-center mt-6">
           <p className="text-gray-600 text-sm">
-            Already have an account?{" "}
+            Don't have an account?{" "}
             <button
-              onClick={onSwitchToLogin}
+              onClick={onSwitchToSignup}
               className="text-blue-600 hover:text-blue-700 font-medium hover:underline"
               disabled={isLoading}
             >
-              Sign in
+              Sign up
             </button>
           </p>
         </div>
@@ -222,4 +158,4 @@ const Signup: React.FC<SignupProps> = ({
   );
 };
 
-export default Signup;
+export default Login;
