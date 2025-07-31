@@ -147,6 +147,21 @@ class ApiService {
       },
     });
   }
+
+  async updateNote(
+    token: string,
+    noteId: string,
+    title: string,
+    content: string
+  ): Promise<ApiResponse<{ note: any }>> {
+    return this.apiCall<{ note: any }>(`/notes/${noteId}`, {
+      method: "PUT",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ title, content }),
+    });
+  }
 }
 
 // Export singleton instance

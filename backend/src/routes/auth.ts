@@ -513,14 +513,17 @@ router.post("/google", async (req, res) => {
     });
   } catch (error) {
     console.error("Google auth error:", error);
-    
-    if (error instanceof Error && error.message.includes("Token used too early")) {
+
+    if (
+      error instanceof Error &&
+      error.message.includes("Token used too early")
+    ) {
       return res.status(400).json({
         status: "ERROR",
         message: "Google token is not yet valid. Please try again.",
       });
     }
-    
+
     if (error instanceof Error && error.message.includes("Token expired")) {
       return res.status(400).json({
         status: "ERROR",

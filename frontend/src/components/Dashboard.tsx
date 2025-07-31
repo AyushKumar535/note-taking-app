@@ -1,8 +1,101 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { useAuth } from "../contexts/AuthContext";
+import { apiService } from "../services/api";
+import { FiTrash2, FiPlus, FiX } from "react-icons/fi";
+
+interface Note {
+  _id: string;
+  title: string;
+  content: string;
+  createdAt: string;
+  updatedAt: string;
+}
 
 const Dashboard: React.FC = () => {
-  const { user, logout } = useAuth();
+  const { user, logout, token } = useAuth();
+  const [notes, setNotes] = useState<Note[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isCreating, setIsCreating] = useState(false);
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [newNote, setNewNote] = useState({ title: "", content: "" });
+  const [error, setError] = useState("");
+
+  // Fetch notes on component mount
+  useEffect(() => {
+    fetchNotes();
+  }, []);
+
+  const fetchNotes = async () => {
+    if (!token) return;
+    
+    try {
+      setIsLoading(true);
+      const response = await apiService.getNotes(token);
+      
+      if (response.status === "SUCCESS" && response.data) {
+        setNotes(response.data.notes);
+      } else {
+        setError(response.message || "Failed to fetch notes");
+      }
+    } catch (error) {
+      setError("Failed to fetch notes");
+      console.error("Fetch notes error:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleCreateNote = async () => {
+    if (!token || !newNote.title.trim() || !newNote.content.trim()) {
+      setError("Title and content are required");
+      return;
+    }
+
+    try {
+      setIsCreating(true);
+      setError("");
+      
+      const response = await apiService.createNote(
+        token,
+        newNote.title.trim(),
+        newNote.content.trim()
+      );
+
+      if (response.status === "SUCCESS" && response.data) {
+        setNotes([response.data.note, ...notes]);
+        setNewNote({ title: "", content: "" });
+        setShowCreateModal(false);
+      } else {
+        setError(response.message || "Failed to create note");
+      }
+    } catch (error) {
+      setError("Failed to create note");
+      console.error("Create note error:", error);
+    } finally {
+      setIsCreating(false);
+    }
+  };
+
+  const handleDeleteNote = async (noteId: string) => {
+    if (!token) return;
+    
+    if (!window.confirm("Are you sure you want to delete this note?")) {
+      return;
+    }
+
+    try {
+      const response = await apiService.deleteNote(token, noteId);
+      
+      if (response.status === "SUCCESS") {
+        setNotes(notes.filter(note => note._id !== noteId));
+      } else {
+        setError(response.message || "Failed to delete note");
+      }
+    } catch (error) {
+      setError("Failed to delete note");
+      console.error("Delete note error:", error);
+    }
+  };
 
   const handleLogout = () => {
     logout();
@@ -12,76 +105,159 @@ const Dashboard: React.FC = () => {
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
       <header className="bg-white shadow-sm border-b border-gray-200">
-        <div className="max-w-4xl mx-auto px-4 py-4 flex justify-between items-center">
-          <h1 className="text-xl font-semibold text-gray-900">
-            Note Taking App
-          </h1>
+        <div className="max-w-md mx-auto px-4 py-4 flex justify-between items-center">
+          <div className="flex items-center space-x-2">
+            <div className="w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center">
+              <div className="w-3 h-3 bg-white rounded-full"></div>
+            </div>
+            <h1 className="text-lg font-semibold text-gray-900">Dashboard</h1>
+          </div>
           <button
             onClick={handleLogout}
-            className="text-red-600 hover:text-red-700 font-medium"
+            className="text-blue-600 hover:text-blue-700 font-medium text-sm"
           >
-            Logout
+            Sign Out
           </button>
         </div>
       </header>
 
       {/* Main Content */}
-      <main className="max-w-4xl mx-auto px-4 py-8">
+      <main className="max-w-md mx-auto px-4 py-6">
         {/* Welcome Section */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-8">
-          <h2 className="text-2xl font-semibold text-gray-900 mb-4">
-            Welcome back, {user?.name}! 🎉
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-6">
+          <h2 className="text-lg font-semibold text-gray-900 mb-2">
+            Welcome, {user?.name} !
           </h2>
-          <div className="space-y-2 text-sm text-gray-600">
-            <p>
-              <strong>Email:</strong> {user?.email}
-            </p>
-            <p>
-              <strong>Account Type:</strong>{" "}
-              {user?.authProvider === "email" ? "Email" : "Google"}
-            </p>
-            <p>
-              <strong>Status:</strong>
-              <span className="ml-1 text-green-600 font-medium">
-                {user?.isVerified ? "✓ Verified" : "⚠ Unverified"}
-              </span>
-            </p>
-          </div>
+          <p className="text-sm text-gray-600">
+            Email: {user?.email}
+          </p>
         </div>
 
-        {/* Success Message */}
-        <div className="bg-green-50 border border-green-200 rounded-lg p-6 mb-8">
-          <div className="flex items-center">
-            <div className="flex-shrink-0">
-              <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
-                <span className="text-white text-sm font-bold">✓</span>
-              </div>
-            </div>
-            <div className="ml-3">
-              <h3 className="text-lg font-medium text-green-800">
-                Authentication Successful!
-              </h3>
-              <p className="text-green-700 mt-1">
-                Your email OTP authentication is working perfectly. The backend
-                and frontend are successfully communicating.
-              </p>
-            </div>
-          </div>
-        </div>
+        {/* Create Note Button */}
+        <button
+          onClick={() => setShowCreateModal(true)}
+          className="w-full bg-blue-500 hover:bg-blue-600 text-white font-medium py-3 px-4 rounded-lg mb-6 flex items-center justify-center space-x-2 transition-colors"
+        >
+          <FiPlus className="w-5 h-5" />
+          <span>Create Note</span>
+        </button>
 
-        {/* Next Steps */}
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
-          <h3 className="text-lg font-medium text-blue-800 mb-3">
-            🚀 What's Next?
-          </h3>
-          <ul className="space-y-2 text-blue-700">
-            <li>• Add note creation and management features</li>
-            <li>• Implement Google OAuth authentication</li>
-            <li>• Create a proper notes dashboard</li>
-            <li>• Add search and filtering capabilities</li>
-          </ul>
+        {/* Error Message */}
+        {error && (
+          <div className="bg-red-50 border border-red-200 rounded-lg p-3 mb-4">
+            <p className="text-red-700 text-sm">{error}</p>
+          </div>
+        )}
+
+        {/* Notes Section */}
+        <div className="mb-4">
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">Notes</h3>
+          
+          {isLoading ? (
+            <div className="space-y-3">
+              {[1, 2, 3].map((i) => (
+                <div key={i} className="bg-white rounded-lg p-4 animate-pulse">
+                  <div className="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
+                  <div className="h-3 bg-gray-200 rounded w-1/2"></div>
+                </div>
+              ))}
+            </div>
+          ) : notes.length === 0 ? (
+            <div className="text-center py-8">
+              <p className="text-gray-500 text-sm">No notes yet. Create your first note!</p>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {notes.map((note) => (
+                <div
+                  key={note._id}
+                  className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 flex justify-between items-start"
+                >
+                  <div className="flex-1">
+                    <h4 className="font-medium text-gray-900 mb-1">{note.title}</h4>
+                    <p className="text-sm text-gray-600 line-clamp-2">{note.content}</p>
+                  </div>
+                  <button
+                    onClick={() => handleDeleteNote(note._id)}
+                    className="ml-3 p-1 text-gray-400 hover:text-red-500 transition-colors"
+                  >
+                    <FiTrash2 className="w-4 h-4" />
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </main>
+
+      {/* Create Note Modal */}
+      {showCreateModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-lg shadow-lg w-full max-w-md">
+            <div className="flex justify-between items-center p-4 border-b">
+              <h3 className="text-lg font-semibold">Create New Note</h3>
+              <button
+                onClick={() => {
+                  setShowCreateModal(false);
+                  setNewNote({ title: "", content: "" });
+                  setError("");
+                }}
+                className="text-gray-400 hover:text-gray-600"
+              >
+                <FiX className="w-5 h-5" />
+              </button>
+            </div>
+            
+            <div className="p-4 space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Title
+                </label>
+                <input
+                  type="text"
+                  value={newNote.title}
+                  onChange={(e) => setNewNote({ ...newNote, title: e.target.value })}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  placeholder="Enter note title"
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Content
+                </label>
+                <textarea
+                  value={newNote.content}
+                  onChange={(e) => setNewNote({ ...newNote, content: e.target.value })}
+                  rows={4}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  placeholder="Enter note content"
+                />
+              </div>
+            </div>
+            
+            <div className="p-4 border-t flex space-x-3">
+              <button
+                onClick={() => {
+                  setShowCreateModal(false);
+                  setNewNote({ title: "", content: "" });
+                  setError("");
+                }}
+                className="flex-1 px-4 py-2 text-gray-600 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleCreateNote}
+                disabled={isCreating || !newNote.title.trim() || !newNote.content.trim()}
+                className="flex-1 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              >
+                {isCreating ? "Creating..." : "Create"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
