@@ -59,6 +59,9 @@ class ApiService {
   async signup(name: string, email: string): Promise<ApiResponse> {
     return this.apiCall("/auth/signup", {
       method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
       body: JSON.stringify({ name, email }),
     });
   }
@@ -69,6 +72,9 @@ class ApiService {
   ): Promise<ApiResponse<AuthResponse>> {
     return this.apiCall<AuthResponse>("/auth/verify", {
       method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
       body: JSON.stringify({ email, otp }),
     });
   }
@@ -76,6 +82,9 @@ class ApiService {
   async login(email: string): Promise<ApiResponse> {
     return this.apiCall("/auth/login", {
       method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
       body: JSON.stringify({ email }),
     });
   }
@@ -86,6 +95,9 @@ class ApiService {
   ): Promise<ApiResponse<AuthResponse>> {
     return this.apiCall<AuthResponse>("/auth/verify-login", {
       method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
       body: JSON.stringify({ email, otp }),
     });
   }
@@ -93,6 +105,9 @@ class ApiService {
   async googleAuth(token: string): Promise<ApiResponse<AuthResponse>> {
     return this.apiCall<AuthResponse>("/auth/google", {
       method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
       body: JSON.stringify({ token }),
     });
   }
@@ -100,6 +115,9 @@ class ApiService {
   async resendOTP(email: string): Promise<ApiResponse> {
     return this.apiCall("/auth/resend-otp", {
       method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
       body: JSON.stringify({ email }),
     });
   }
@@ -133,6 +151,7 @@ class ApiService {
     return this.apiCall<{ note: any }>("/notes", {
       method: "POST",
       headers: {
+        "Content-Type": "application/json",
         Authorization: `Bearer ${token}`,
       },
       body: JSON.stringify({ title, content }),
@@ -157,6 +176,7 @@ class ApiService {
     return this.apiCall<{ note: any }>(`/notes/${noteId}`, {
       method: "PUT",
       headers: {
+        "Content-Type": "application/json",
         Authorization: `Bearer ${token}`,
       },
       body: JSON.stringify({ title, content }),
