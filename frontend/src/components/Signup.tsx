@@ -391,7 +391,7 @@ const Signup: React.FC<SignupProps> = ({
 
         {/* Right Column - Background Image */}
         <div
-          className="w-1/2 bg-cover bg-center bg-no-repeat"
+          className="w-1/2 bg-cover bg-center bg-no-repeat rounded-l-2xl m-4 ml-0"
           style={{ backgroundImage: "url(/right-column.png)" }}
         ></div>
       </div>
