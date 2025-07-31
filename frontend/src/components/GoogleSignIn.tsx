@@ -26,7 +26,7 @@ const GoogleSignIn: React.FC<GoogleSignInProps> = ({
     const initializeGoogleSignIn = () => {
       if (window.google && googleButtonRef.current) {
         window.google.accounts.id.initialize({
-          client_id: "510418701705-7jar80rv8tirh5cvmsh1v4vhgohf6l8c.apps.googleusercontent.com",
+          client_id: import.meta.env.VITE_GOOGLE_CLIENT_ID,
           callback: handleGoogleResponse,
         });
 
@@ -45,10 +45,12 @@ const GoogleSignIn: React.FC<GoogleSignInProps> = ({
       initializeGoogleSignIn();
     } else {
       // Listen for the script to load
-      const script = document.querySelector('script[src="https://accounts.google.com/gsi/client"]');
+      const script = document.querySelector(
+        'script[src="https://accounts.google.com/gsi/client"]'
+      );
       if (script) {
-        script.addEventListener('load', initializeGoogleSignIn);
-        return () => script.removeEventListener('load', initializeGoogleSignIn);
+        script.addEventListener("load", initializeGoogleSignIn);
+        return () => script.removeEventListener("load", initializeGoogleSignIn);
       }
     }
   }, []);
