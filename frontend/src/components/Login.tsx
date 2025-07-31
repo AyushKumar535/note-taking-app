@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-import { FiCalendar } from "react-icons/fi";
 import { apiService } from "../services/api";
 import GoogleSignIn from "./GoogleSignIn";
 
@@ -14,21 +13,13 @@ const Login: React.FC<LoginProps> = ({
   onSwitchToSignup,
   onGoogleSuccess,
 }) => {
-  const [formData, setFormData] = useState({
-    name: "",
-    dateOfBirth: "",
-    email: "",
-  });
+  const [email, setEmail] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
 
   // Handle input changes
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
+    setEmail(e.target.value);
     // Clear error when user starts typing
     if (error) setError("");
   };
@@ -40,17 +31,17 @@ const Login: React.FC<LoginProps> = ({
     setIsLoading(true);
 
     // Basic validation
-    if (!formData.email.trim()) {
+    if (!email.trim()) {
       setError("Please enter your email");
       setIsLoading(false);
       return;
     }
 
     try {
-      const response = await apiService.login(formData.email.trim());
+      const response = await apiService.login(email.trim());
 
       if (response.status === "SUCCESS") {
-        onLoginSuccess(formData.email.trim());
+        onLoginSuccess(email.trim());
       } else {
         setError(response.message || "Login failed. Please try again.");
       }
@@ -100,49 +91,6 @@ const Login: React.FC<LoginProps> = ({
 
           {/* Form */}
           <form onSubmit={handleSubmit} className="space-y-4">
-            {/* Name Field */}
-            <div>
-              <label
-                htmlFor="name"
-                className="block text-sm font-normal text-gray-600 mb-2"
-              >
-                Your Name
-              </label>
-              <input
-                id="name"
-                name="name"
-                type="text"
-                value={formData.name}
-                onChange={handleChange}
-                placeholder="Jonas Khanwald"
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors text-gray-900"
-                disabled={isLoading}
-              />
-            </div>
-
-            {/* Date of Birth Field */}
-            <div>
-              <label
-                htmlFor="dateOfBirth"
-                className="block text-sm font-normal text-gray-600 mb-2"
-              >
-                Date of Birth
-              </label>
-              <div className="relative">
-                <input
-                  id="dateOfBirth"
-                  name="dateOfBirth"
-                  type="date"
-                  value={formData.dateOfBirth}
-                  onChange={handleChange}
-                  placeholder="11 December 1997"
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors pr-10 text-gray-900"
-                  disabled={isLoading}
-                />
-                <FiCalendar className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5 pointer-events-none" />
-              </div>
-            </div>
-
             {/* Email Field */}
             <div>
               <label
@@ -155,7 +103,7 @@ const Login: React.FC<LoginProps> = ({
                 id="email"
                 name="email"
                 type="email"
-                value={formData.email}
+                value={email}
                 onChange={handleChange}
                 placeholder="jonas_khanwald@gmail.com"
                 className="w-full px-4 py-3 border-2 border-blue-500 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors text-gray-900"
@@ -168,7 +116,7 @@ const Login: React.FC<LoginProps> = ({
             <div className="pt-6">
               <button
                 type="submit"
-                disabled={isLoading || !formData.email.trim()}
+                disabled={isLoading || !email.trim()}
                 className="w-full text-white font-semibold py-4 px-4 rounded-xl transition-colors duration-200"
                 style={{
                   backgroundColor: isLoading ? "#93C5FD" : "#337DFF",
@@ -255,49 +203,6 @@ const Login: React.FC<LoginProps> = ({
 
             {/* Form */}
             <form onSubmit={handleSubmit} className="space-y-4">
-              {/* Name Field */}
-              <div>
-                <label
-                  htmlFor="desktop-name"
-                  className="block text-sm font-normal text-gray-600 mb-1.5"
-                >
-                  Your Name
-                </label>
-                <input
-                  id="desktop-name"
-                  name="name"
-                  type="text"
-                  value={formData.name}
-                  onChange={handleChange}
-                  placeholder="Jonas Khanwald"
-                  className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors text-gray-900 text-sm"
-                  disabled={isLoading}
-                />
-              </div>
-
-              {/* Date of Birth Field */}
-              <div>
-                <label
-                  htmlFor="desktop-dateOfBirth"
-                  className="block text-sm font-normal text-gray-600 mb-1.5"
-                >
-                  Date of Birth
-                </label>
-                <div className="relative">
-                  <input
-                    id="desktop-dateOfBirth"
-                    name="dateOfBirth"
-                    type="date"
-                    value={formData.dateOfBirth}
-                    onChange={handleChange}
-                    placeholder="11 December 1997"
-                    className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors pr-10 text-gray-900 text-sm"
-                    disabled={isLoading}
-                  />
-                  <FiCalendar className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4 pointer-events-none" />
-                </div>
-              </div>
-
               {/* Email Field */}
               <div>
                 <label
@@ -310,7 +215,7 @@ const Login: React.FC<LoginProps> = ({
                   id="desktop-email"
                   name="email"
                   type="email"
-                  value={formData.email}
+                  value={email}
                   onChange={handleChange}
                   placeholder="jonas_khanwald@gmail.com"
                   className="w-full px-4 py-2.5 border-2 border-blue-500 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors text-gray-900 text-sm"
@@ -323,7 +228,7 @@ const Login: React.FC<LoginProps> = ({
               <div className="pt-4">
                 <button
                   type="submit"
-                  disabled={isLoading || !formData.email.trim()}
+                  disabled={isLoading || !email.trim()}
                   className="w-full text-white font-semibold py-3 px-4 rounded-xl transition-colors duration-200 text-sm"
                   style={{
                     backgroundColor: isLoading ? "#93C5FD" : "#337DFF",
