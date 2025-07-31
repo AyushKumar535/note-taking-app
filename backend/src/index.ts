@@ -18,7 +18,13 @@ const PORT = process.env.PORT || 5000;
 // Middleware
 app.use(
   cors({
-    origin: ["http://localhost:3000", "http://localhost:5173"], // Allow frontend origins
+    origin: [
+      "http://localhost:3000", 
+      "http://localhost:5173",
+      "https://note-taking-app-frontend-iota.vercel.app",
+      "https://note-taking-app-frontend-ayushkumars-projects.vercel.app",
+      "https://note-taking-app-frontend-git-main-ayushkumars-projects.vercel.app"
+    ], // Allow frontend origins
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
@@ -214,8 +220,13 @@ app.get("/test-db", async (req, res) => {
   }
 });
 
-// Start server
-app.listen(PORT, () => {
-  console.log(`🚀 Server running on port ${PORT}`);
-  console.log(`📊 Health check: http://localhost:${PORT}/health`);
-});
+// Export for Vercel serverless functions
+export default app;
+
+// For local development only
+if (process.env.NODE_ENV !== 'production') {
+  app.listen(PORT, () => {
+    console.log(`🚀 Server running on port ${PORT}`);
+    console.log(`📊 Health check: http://localhost:${PORT}/health`);
+  });
+}
