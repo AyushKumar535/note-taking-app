@@ -349,7 +349,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 **Ayush Kumar**
 
-- GitHub: [@yourusername](https://github.com/AyushKumar535)
+- GitHub: [Click here!](https://github.com/AyushKumar535)
 - Email: ayushrana03dec2003@gmail.com
 
 ## 🙏 Acknowledgments
