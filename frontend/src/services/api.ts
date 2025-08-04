@@ -1,5 +1,5 @@
 // API configuration and service functions
-const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
+const API_BASE_URL = "https://note-taking-app-bk.vercel.app";
 
 // Debug: Log the API URL being used
 console.log("🔧 DEBUG: API_BASE_URL =", API_BASE_URL);
