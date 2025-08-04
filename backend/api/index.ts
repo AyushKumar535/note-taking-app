@@ -20,9 +20,7 @@ app.use(
     origin: [
       "http://localhost:3000",
       "http://localhost:5173",
-      "https://note-taking-app-frontend-iota.vercel.app",
-      "https://note-taking-app-frontend-ayushkumars-projects.vercel.app",
-      "https://note-taking-app-frontend-git-main-ayushkumars-projects.vercel.app",
+      "https://note-taking-8lwgc7i61-ayushkumars-projects.vercel.app"
     ],
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
