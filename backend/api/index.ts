@@ -20,13 +20,16 @@ app.use(
     origin: [
       "http://localhost:3000",
       "http://localhost:5173",
-      "https://note-taking-8lwgc7i61-ayushkumars-projects.vercel.app"
+      "https://note-taking-8lwgc7i61-ayushkumars-projects.vercel.app",
+      "https://note-taking-app-git-main-ayushkumars-projects.vercel.app",
+      "https://note-taking-g9oralx2r-ayushkumars-projects.vercel.app",
+      "https://note-taking-app-rho-five.vercel.app"
     ],
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
   })
-);
+
 
 app.use(express.json());
 
